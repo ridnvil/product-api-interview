@@ -1,0 +1,164 @@
+{% extends "layout.html" %}
+
+{% block title %}Product List{% endblock %}
+
+{% block content %}
+  <h1 class="text-3xl font-bold mb-6 text-blue-700">Daftar Produk</h1>
+
+  <div class="flex flex-wrap gap-2 justify-between items-center w-full max-w-5xl mb-4">
+    <div class="flex gap-2">
+      <form action="{{ url_for('import_products') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
+        <input type="file" name="file" accept=".csv" class="border border-gray-300 rounded px-2 py-1">
+        <button type="submit" class="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition">Import CSV</button>
+      </form>
+      <a href="{{ url_for('export_products') }}" class="bg-yellow-500 text-white px-3 py-2 rounded hover:bg-yellow-600 transition">Export CSV</a>
+      
+      <form action="{{ url_for('delete_all_products') }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus semua produk?');">
+        <button type="submit" class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition">Delete All Products</button>
+      </form>
+      <button id="openModalBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Create Product</button>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto w-full max-w-5xl mb-8">
+    <table id="productTable" class="min-w-full bg-gray-100 rounded-md shadow">
+      <thead>
+        <tr>
+          <th class="py-2 px-4 border-b-2 cursor-pointer" onclick="sortTable(0)">ID</th>
+          <th class="py-2 px-4 border-b-2 cursor-pointer" onclick="sortTable(1)">Nama</th>
+          <th class="py-2 px-4 border-b-2 cursor-pointer" onclick="sortTable(2)">Harga</th>
+          <th class="py-2 px-4 border-b-2 cursor-pointer" onclick="sortTable(3)">Qty</th>
+          <th class="py-2 px-4 border-b-2 cursor-pointer">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr>
+          <td class="py-2 px-4 border-b">{{ product.id }}</td>
+          <td class="py-2 px-4 border-b">{{ product.name }}</td>
+          <td class="py-2 px-4 border-b text-right">Rp{{ product.price | ribuan }}</td>
+          <td class="py-2 px-4 border-b text-right">{{ product.quantity }}</td>
+          <td class="px-2 py-2 border-b gap-2 flex justify-center items-center">
+            <button id="editProduct" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 transition text-sm" onclick="openEditModal(`{{ product.id }}`, `{{ product.name }}`, `{{ product.price }}`, `{{ product.quantity }}`)">Edit</button>
+            <form action="{{ url_for('delete_product', product_id=product.id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus produk ini?');">
+              <button type="submit" class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition text-sm">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div id="editProductModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <button id="closeEditModalBtn" type="button" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+      <h2 class="text-xl font-semibold mb-4 text-gray-800">Edit Produk</h2>
+      <form id="editProductForm" method="POST">
+        <div class="mb-4">
+          <label class="block text-gray-700 mb-2">Nama Barang:</label>
+          <input type="text" name="name" id="editName" required class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 mb-2">Harga:</label>
+          <input type="number" name="price" id="editPrice" required class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div class="mb-6">
+          <label class="block text-gray-700 mb-2">Qty:</label>
+          <input type="number" name="quantity" id="editQuantity" required class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition w-full">Update</button>
+      </form>
+    </div>
+  </div>
+  
+  <div id="productModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+      <h2 class="text-xl font-semibold mb-4 text-gray-800">Tambah Produk Baru</h2>
+      <form action="{{ url_for('add_product') }}" method="POST">
+        <div class="mb-4">
+          <label class="block text-gray-700 mb-2">Nama Barang:</label>
+          <input type="text" name="name" required class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 mb-2">Harga:</label>
+          <input type="number" name="price" required class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div class="mb-6">
+          <label class="block text-gray-700 mb-2">Qty:</label>
+          <input type="number" name="quantity" required class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition w-full">Tambah</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const editProductModal = document.getElementById('editProductModal');
+    const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+    const editProductForm = document.getElementById('editProductForm');
+    const editName = document.getElementById('editName');
+    const editPrice = document.getElementById('editPrice');
+    const editQuantity = document.getElementById('editQuantity');
+    // const editButtons = document.getElementById('editProduct');
+    let currentEditId = null;
+
+    function openEditModal(id, name, price, quantity) {
+      currentEditId = parseInt(id);
+      editName.value = name;
+      editPrice.value = parseFloat(price);
+      editQuantity.value = parseInt(quantity);
+      editProductModal.classList.remove('hidden');
+      editProductForm.action = `/edit_product/${id}`;
+    }
+    closeEditModalBtn.onclick = () => editProductModal.classList.add('hidden');
+    window.addEventListener('click', function(event) {
+      if (event.target === editProductModal) editProductModal.classList.add('hidden');
+    });
+    
+    const openModalBtn = document.getElementById('openModalBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const productModal = document.getElementById('productModal');
+    openModalBtn.onclick = () => productModal.classList.remove('hidden');
+    closeModalBtn.onclick = () => productModal.classList.add('hidden');
+    window.onclick = function(event) {
+      if (event.target === productModal) productModal.classList.add('hidden');
+    }
+
+    function sortTable(n) {
+      const table = document.getElementById('productTable');
+      let switching = true, dir = 'asc', switchcount = 0;
+      while (switching) {
+        switching = false;
+        const rows = table.rows;
+        for (let i = 1; i < rows.length - 1; i++) {
+          let shouldSwitch = false;
+          let x = rows[i].getElementsByTagName('TD')[n];
+          let y = rows[i + 1].getElementsByTagName('TD')[n];
+          if (dir === 'asc') {
+            if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          } else if (dir === 'desc') {
+            if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          }
+        }
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          switchcount++;
+        } else {
+          if (switchcount === 0 && dir === 'asc') {
+            dir = 'desc';
+            switching = true;
+          }
+        }
+      }
+    }
+  </script>
+{% endblock %}
