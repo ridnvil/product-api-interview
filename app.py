@@ -1,10 +1,6 @@
 import csv
 from io import StringIO
-from flask import Response
 from flask import Flask, jsonify, request, render_template, redirect, url_for, Response
-import csv
-from io import StringIO
-from flask_sqlalchemy import SQLAlchemy
 from models.products import db, Product
 
 app = Flask(__name__)
