@@ -19,6 +19,16 @@ class ProductSchema(BaseModel):
     price: float
     quantity: int
 
+    @classmethod
+    def validate_product(cls, product):
+        errors = []
+        if not product.name or not product.name.strip():
+            errors.append("Name is required.")
+        if product.price is None or product.price < 0:
+            errors.append("Price must be a non-negative number.")
+        if product.quantity is None or product.quantity < 0:
+            errors.append("Quantity must be a non-negative integer.")
+        return errors
 
 @app.get("/products/export")
 def export_products(db: Session = Depends(get_db)):
@@ -27,7 +37,6 @@ def export_products(db: Session = Depends(get_db)):
     cw = csv.writer(si)
     cw.writerow(['id', 'name', 'price', 'quantity'])
     for p in products:
-        # Convert price to float for CSV
         price = float(p.price) if p.price is not None else 0
         cw.writerow([p.id, p.name, price, p.quantity])
     output = si.getvalue().encode('utf-8')
@@ -59,6 +68,9 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
 
 @app.post("/products", response_model=ProductSchema)
 def create_product(product: ProductSchema, db: Session = Depends(get_db)):
+    errors = ProductSchema.validate_product(product)
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
     db_product = Product(name=product.name, price=product.price, quantity=product.quantity)
     db.add(db_product)
     db.commit()
@@ -70,6 +82,9 @@ def update_product(product_id: int, product: ProductSchema, db: Session = Depend
     db_product = db.query(Product).get(product_id)
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
+    errors = ProductSchema.validate_product(product)
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
     db_product.name = product.name
     db_product.price = product.price
     db_product.quantity = product.quantity
@@ -91,29 +106,3 @@ def delete_all_products(db: Session = Depends(get_db)):
     db.query(Product).delete()
     db.commit()
     return {"detail": "All products deleted"}
-
-@app.get("/products/export")
-def export_products(db: Session = Depends(get_db)):
-    products = db.query(Product).all()
-    si = StringIO()
-    cw = csv.writer(si)
-    cw.writerow(['id', 'name', 'price', 'quantity'])
-    for p in products:
-        # Convert price to float for CSV
-        price = float(p.price) if p.price is not None else 0
-        cw.writerow([p.id, p.name, price, p.quantity])
-    output = si.getvalue().encode('utf-8')
-    return StreamingResponse(
-        iter([output]),
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=products.csv"}
-    )
-
-@app.post("/products/import")
-def import_products(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    content = file.file.read().decode("utf-8")
-    reader = csv.DictReader(StringIO(content))
-    for row in reader:
-        db.add(Product(name=row['name'], price=row['price'], quantity=row.get('quantity', 0)))
-    db.commit()
-    return {"detail": "Products imported"}
