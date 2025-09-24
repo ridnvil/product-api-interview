@@ -96,6 +96,7 @@
    ```
 3. Buka browser ke `http://localhost:5001`
 4. API running di `http://localhost:8000`
+5. Gunakan `http://localhost:8000/docs` untuk melihat dokumentasi API dari Swegger UI.
 
 ## Catatan
 1. Wajib konek internet untuk penggunaan tailwindcss dari CDN.
