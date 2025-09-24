@@ -97,6 +97,5 @@
 3. Buka browser ke `http://localhost:5001`
 
 ## Catatan
-1. Buatlah sebuah database dan gunakan pada konfigurasi database di bagian app.py sebelum menjalankan aplikasi.
-2. Wajib konek internet untuk penggunaan tailwindcss dari CDN.
+1. Wajib konek internet untuk penggunaan tailwindcss dari CDN.
 ---
