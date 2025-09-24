@@ -21,9 +21,23 @@ def home():
 
 @app.route("/add_product", methods=["POST"])
 def add_product():
-    name = request.form.get("name")
-    price = request.form.get("price")
-    quantity = request.form.get("quantity")
+    name = request.form.get("name").strip()
+    price = request.form.get("price").strip()
+    quantity = request.form.get("quantity").strip()
+
+    error = None
+    if not name:
+        error = "Name is required"
+    elif not price:
+        error = "Price is required"
+    elif not price.isdigit() or int(price) < 0:
+        error = "Price must be a non-negative integer"
+    elif not quantity.isdigit() or int(quantity) < 0:
+        error = "Quantity must be a non-negative integer"
+
+    if error:
+        return render_template("index.html", error=error)
+
 
     new_product = Product(name=name, price=price, quantity=quantity)
     db.session.add(new_product)
