@@ -95,6 +95,7 @@
     uvicorn main:app --reload
    ```
 3. Buka browser ke `http://localhost:5001`
+4. API running di `http://localhost:8000`
 
 ## Catatan
 1. Wajib konek internet untuk penggunaan tailwindcss dari CDN.
