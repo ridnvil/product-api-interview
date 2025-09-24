@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, make_response
+from flask import Flask, render_template, request, redirect, url_for, make_response, flash
+from flask import get_flashed_messages
 import requests
 
 app = Flask(__name__)
@@ -8,9 +9,13 @@ FASTAPI_URL = "http://127.0.0.1:8000"
 def home():
     response = requests.get(f"{FASTAPI_URL}/products")
     products = response.json()
-    return render_template("index.html", products=products)
+    messages = get_flashed_messages()
+    return render_template("index.html", products=products, messages=messages)
 
-# Create Product
+@app.route("/error")
+def error():
+    return render_template("error.html")
+
 @app.route("/add_product", methods=["POST"])
 def add_product():
     data = {
@@ -18,10 +23,11 @@ def add_product():
         "price": request.form["price"],
         "quantity": request.form["quantity"]
     }
-    requests.post(f"{FASTAPI_URL}/products", json=data)
+    resp = requests.post(f"{FASTAPI_URL}/products", json=data)
+    if resp.status_code >= 400:
+        return redirect(url_for("error"))
     return redirect(url_for("home"))
 
-# Edit Product
 @app.route("/edit_product/<int:product_id>", methods=["POST"])
 def edit_product(product_id):
     data = {
@@ -29,7 +35,9 @@ def edit_product(product_id):
         "price": request.form["price"],
         "quantity": request.form["quantity"]
     }
-    requests.put(f"{FASTAPI_URL}/products/{product_id}", json=data)
+    resp = requests.put(f"{FASTAPI_URL}/products/{product_id}", json=data)
+    if resp.status_code >= 400:
+        return redirect(url_for("error"))
     return redirect(url_for("home"))
 
 @app.route("/delete_product/<int:product_id>", methods=["POST"])

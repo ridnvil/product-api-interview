@@ -3,6 +3,13 @@
 {% block title %}Product List{% endblock %}
 
 {% block content %}
+  {% if messages %}
+    <div class="mb-4 w-full max-w-5xl mx-auto">
+      {% for msg in messages %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-2">{{ msg }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
   <h1 class="text-3xl font-bold mb-6 text-blue-700">Daftar Produk</h1>
 
   <div class="flex flex-wrap gap-2 justify-between items-center w-full max-w-5xl mb-4">
