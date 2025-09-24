@@ -2,19 +2,20 @@
 
 ## Database Connection Setup
 
-1. Edit file `app.py` pada bagian berikut:
-	 ```python
-	 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://<username>:<password>@<host>:<port>/<database_name>"
-	 ```
-	 Contoh:
-	 ```python
-	 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:yourpassword@localhost:3306/products_db"
-	 ```
+1. Edit file `config/base.py` pada bagian berikut:
+	```python
+	DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://<username>:<password>@<host>:<port>/<database_name>")
+	```
+	Contoh:
+	```python
+	DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:yourpassword@localhost:3306/products_db")
+	```
+	Anda juga bisa mengatur variabel environment `DATABASE_URL` agar lebih fleksibel.
 2. Pastikan MySQL sudah berjalan dan database sudah dibuat.
 3. Install package yang dibutuhkan:
-	 ```bash
-	 pip install flask flask_sqlalchemy pymysql
-	 ```
+	```bash
+	pip install flask fastapi uvicorn sqlalchemy pymysql requests pydantic
+	```
 
 ## API Documentation
 

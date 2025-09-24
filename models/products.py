@@ -1,10 +1,10 @@
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, Integer, String, Numeric
 
-db = SQLAlchemy()
+from config.base import Base
 
-class Product(db.Model):
+class Product(Base):
     __tablename__ = "products"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    price = db.Column(db.Numeric(10, 2), nullable=False)
-    quantity = db.Column(db.Integer, default=0)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(120), nullable=False)
+    price = Column(Numeric(10, 2), nullable=False)
+    quantity = Column(Integer, default=0)

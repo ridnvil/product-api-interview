@@ -36,7 +36,7 @@
         <tr>
           <td class="py-2 px-4 border-b">{{ product.id }}</td>
           <td class="py-2 px-4 border-b">{{ product.name }}</td>
-          <td class="py-2 px-4 border-b text-right">Rp{{ product.price | ribuan }}</td>
+          <td class="py-2 px-4 border-b text-right">Rp{{ product.price }}</td>
           <td class="py-2 px-4 border-b text-right">{{ product.quantity }}</td>
           <td class="px-2 py-2 border-b gap-2 flex justify-center items-center">
             <button id="editProduct" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 transition text-sm" onclick="openEditModal(`{{ product.id }}`, `{{ product.name }}`, `{{ product.price }}`, `{{ product.quantity }}`)">Edit</button>
